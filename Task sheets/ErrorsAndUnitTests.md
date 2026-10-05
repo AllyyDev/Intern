@@ -26,17 +26,6 @@ public bool Delete(int id)
 
 The bug gets worse after deletions, because Ids and indexes drift further apart.
 
-**Fix:** look the vehicle up by `Id`.
-
-```csharp
-public bool Delete(int id)
-{
-    var vehicle = GetById(id);
-    if (vehicle == null) return false;
-    return _vehicles.Remove(vehicle);
-}
-```
-
 ---
 
 ### #2 – `GetByStatus` is not implemented (High)
@@ -80,23 +69,11 @@ Problems:
 - **No uniqueness check.** `FLT-103` and `flt103` normalize to the same value, but nothing prevents duplicates.
 - **Lossy.** Hyphens and original formatting are discarded permanently. This is a problem in countries where the hyphen or space is part of the official plate format (e.g. German plates like `H-AB 1234`).
 
-**Fix (example):** pick one canonical format, apply it to the seed data as well, and enforce uniqueness.
-
-```csharp
-public static string CleanLicensePlate(string plate)
-{
-    if (string.IsNullOrWhiteSpace(plate)) return string.Empty;
-    return new string(plate.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
-}
-```
-
 ---
 
 ### #5 – `IsValidYear` is dead code (Medium)
 
 `FleetHelper.IsValidYear` exists but is never called from `Create`, `Update` or the controller. A vehicle with `Year = -5` or `Year = 3000` is accepted without complaint. Also, `DateTime.Now` depends on the server's local time zone, and `DateTime.UtcNow` is usually preferred.
-
-**Fix:** call it during `Create` / `Update` (or use data annotations) and return `400 Bad Request` for invalid values.
 
 ---
 
@@ -107,8 +84,6 @@ public static string CleanLicensePlate(string plate)
 - `Make`, `Model` and `LicensePlate` can be empty strings (the defaults are `string.Empty`).
 - `Update` does not check that the license plate is unique.
 - `PUT` ignores any `Id` in the request body. This is fine, but it is not documented.
-
-**Fix:** use an `enum` for `Status` (with `JsonStringEnumConverter`) and data annotations (`[Required]`, `[Range]`) on the model. `[ApiController]` then returns 400 automatically.
 
 ---
 
@@ -150,23 +125,6 @@ With `RoutePrefix = "swagger"`, Swagger UI is only served at `/swagger`. To serv
 - `Year` / `IsValidYear` upper bound of `currentYear + 1` allows next year's models. That is plausible, but should be documented.
 
 ---
-
-## Suggested Fixes
-
-Reference implementation for the two unimplemented methods:
-
-```csharp
-public IEnumerable<Vehicle> GetByStatus(string status)
-{
-    return _vehicles.Where(v =>
-        string.Equals(v.Status, status, StringComparison.OrdinalIgnoreCase));
-}
-
-public double GetAverageFleetMileage()
-{
-    return _vehicles.Count == 0 ? 0.0 : _vehicles.Average(v => v.Mileage);
-}
-```
 
 ## Manual Test Plan
 
