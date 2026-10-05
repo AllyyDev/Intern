@@ -45,12 +45,12 @@ Intern (solution)
     │   └── VehicleService.cs       # In-memory implementation
     ├── appsettings.json
     ├── FleetApi.http               # Sample requests for the VS HTTP editor
-    └── Program.cs                  # App bootstrap, DI, Swagger
+    └── Program.cs             
 ```
 
 ## Getting Started
 
-**Prerequisites:** .NET SDK 8.0 or newer, Visual Studio 2022+ or the `dotnet` CLI.
+**Prerequisites:** .NET SDK 8.0 or newer, Visual Studio 2022+
 
 ```bash
 dotnet restore
